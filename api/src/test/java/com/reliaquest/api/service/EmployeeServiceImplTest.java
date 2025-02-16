@@ -3,6 +3,8 @@ package com.reliaquest.api.service;
 import com.reliaquest.api.dao.EmployeeDao;
 import com.reliaquest.api.dto.CreateEmployeeRequestDto;
 import com.reliaquest.api.dto.EmployeeResponseDto;
+import com.reliaquest.api.exception.NoDataFoundException;
+import com.reliaquest.api.exception.ServiceException;
 import com.reliaquest.api.service.serviceImpl.EmployeeServiceImpl;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,10 +57,8 @@ class EmployeeServiceImplTest {
   void testGetAllEmployees_EmptyList() {
     Mockito.when(employeeDao.getAllEmployees()).thenReturn(List.of());
 
-    List<EmployeeResponseDto> result = employeeService.getAllEmployees();
-
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertThrows(NoDataFoundException.class,
+        () -> employeeService.getAllEmployees());
   }
 
   @Test
@@ -79,10 +79,8 @@ class EmployeeServiceImplTest {
     String name = "xyz";
     Mockito.when(employeeDao.getEmployeesByName(name)).thenReturn(List.of());
 
-    List<EmployeeResponseDto> result = employeeService.getEmployeesByName(name);
-
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertThrows(NoDataFoundException.class,
+        () -> employeeService.getEmployeesByName(name));
   }
 
   @Test
@@ -101,9 +99,8 @@ class EmployeeServiceImplTest {
     String id = "1";
     Mockito.when(employeeDao.getEmployeeById(id)).thenReturn(null);
 
-    EmployeeResponseDto result = employeeService.getEmployeeById(id);
-
-    assertNull(result);
+    assertThrows(NoDataFoundException.class,
+        () -> employeeService.getEmployeeById(id));
   }
 
   @Test
@@ -121,8 +118,8 @@ class EmployeeServiceImplTest {
   void testGetHighestSalary_NoData() {
     Mockito.when(employeeDao.getHighestSalaryOfEmployees()).thenReturn(0);
 
-    Integer result = employeeService.getHighestSalaryOfEmployees();
-    assertEquals(0, result);
+    assertThrows(NoDataFoundException.class,
+        () -> employeeService.getHighestSalaryOfEmployees());
   }
 
   @Test
@@ -141,10 +138,8 @@ class EmployeeServiceImplTest {
   void testGetTopTenHighestEarningEmployeeNames_NoData() {
     Mockito.when(employeeDao.getTopTenHighestEarningEmployeeNames()).thenReturn(List.of());
 
-    List<String> result = employeeService.getTopTenHighestEarningEmployeeNames();
-
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertThrows(NoDataFoundException.class,
+        () -> employeeService.getTopTenHighestEarningEmployeeNames());
   }
 
   @Test
@@ -173,9 +168,8 @@ class EmployeeServiceImplTest {
         .build();
     Mockito.when(employeeDao.createEmployee(createEmployeeRequestDto)).thenReturn(null);
 
-    EmployeeResponseDto result = employeeService.createEmployee(createEmployeeRequestDto);
-
-    assertNull(result);
+    assertThrows(ServiceException.class,
+        () -> employeeService.createEmployee(createEmployeeRequestDto));
   }
 
   @Test
@@ -193,8 +187,7 @@ class EmployeeServiceImplTest {
     String id = "1";
     Mockito.when(employeeDao.deleteEmployeeById(id)).thenReturn(false);
 
-    boolean result = employeeService.deleteEmployeeById(id);
-
-    assertFalse(result);
+    assertThrows(ServiceException.class,
+        () -> employeeService.deleteEmployeeById(id));
   }
 }

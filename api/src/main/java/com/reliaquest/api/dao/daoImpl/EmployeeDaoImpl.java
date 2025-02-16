@@ -31,10 +31,10 @@ public class EmployeeDaoImpl implements EmployeeDao {
   public List<EmployeeResponseDto> getEmployeesByName(String name) {
     log.debug("Fetching employees by name: {}", name);
     List<EmployeeResponseDto> employeeListByName = employeeList.stream()
-        .filter(employee -> employee.getName().equalsIgnoreCase(name))
+        .filter(employee -> employee.getName().contains(name))
         .map(Employee::toEmployeeResponseDto)
         .collect(Collectors.toList());
-    log.info("Found {} employees with the name {}", employeeListByName.size(), name);
+    log.info("Found {} employees with the name containing {}", employeeListByName.size(), name);
     return employeeListByName;
   }
 
@@ -50,7 +50,7 @@ public class EmployeeDaoImpl implements EmployeeDao {
       return employeeOpt.get().toEmployeeResponseDto();
     } else {
       log.error("No employee found with ID: {}", id);
-      return null;  // Optionally throw a custom exception here
+      return null;
     }
   }
 
@@ -76,7 +76,16 @@ public class EmployeeDaoImpl implements EmployeeDao {
   @Override
   public EmployeeResponseDto createEmployee(CreateEmployeeRequestDto createEmployeeRequestDto) {
     log.debug("Creating new employee with name: {}", createEmployeeRequestDto.getName());
+
     Employee employee = createEmployeeRequestDto.fromCreateEmployeeRequestDto().toEmployee();
+    boolean isIdAlreadyPresent = employeeList
+        .stream()
+        .anyMatch(employee1 -> employee1.getId().equals(employee.getId()));
+
+    if (isIdAlreadyPresent) {
+      return null;
+    }
+
     employeeList.add(employee);
     return employee.toEmployeeResponseDto();
   }
