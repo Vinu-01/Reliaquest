@@ -20,6 +20,6 @@ public interface EmployeeService {
 
   EmployeeResponseDtoApi createEmployee(CreateEmployeeRequestDtoApi createEmployeeRequestDtoApi);
 
-  boolean deleteEmployeeById(String id);
+  String deleteEmployeeById(String id);
 
 }

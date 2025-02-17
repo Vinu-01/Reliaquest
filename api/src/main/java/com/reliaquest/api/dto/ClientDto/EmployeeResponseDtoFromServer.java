@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class EmployeeResponseDto {
+public class EmployeeResponseDtoFromServer {
   private EmployeeResponseDtoApi data;
   private String status;
 }

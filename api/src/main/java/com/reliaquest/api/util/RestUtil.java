@@ -3,7 +3,7 @@ package com.reliaquest.api.util;
 import com.reliaquest.api.config.AppConfig;
 import com.reliaquest.api.dto.ClientDto.DeleteEmployeeRequestDto;
 import com.reliaquest.api.dto.ClientDto.DeleteEmployeeResponseDto;
-import com.reliaquest.api.dto.ClientDto.EmployeeResponseDto;
+import com.reliaquest.api.dto.ClientDto.EmployeeResponseDtoFromServer;
 import com.reliaquest.api.dto.ClientDto.GetAllEmployeeResponseDto;
 import com.reliaquest.api.dto.CreateEmployeeRequestDtoApi;
 import com.reliaquest.api.exception.NoDataFoundException;
@@ -61,15 +61,15 @@ public class RestUtil {
   }
 
   @SneakyThrows
-  public EmployeeResponseDto getEmployeeById(UUID id) {
+  public EmployeeResponseDtoFromServer getEmployeeById(UUID id) {
     String url =
         appConfig.getEmployeeServiceBaseUrl() + appConfig.getEmployeeServiceResourceUrl() + "/"
             + id;
 
     log.info("Calling employee service at {} to get employee with id : {}", url, id);
 
-    ResponseEntity<EmployeeResponseDto> response = webClient.get().uri(url)
-        .exchangeToMono(clientResponse -> clientResponse.toEntity(EmployeeResponseDto.class))
+    ResponseEntity<EmployeeResponseDtoFromServer> response = webClient.get().uri(url)
+        .exchangeToMono(clientResponse -> clientResponse.toEntity(EmployeeResponseDtoFromServer.class))
         .block();
 
     if (response == null) {
@@ -81,9 +81,9 @@ public class RestUtil {
     HttpStatus status = HttpStatus.valueOf(response.getStatusCode().value());
     switch (status) {
       case OK:
-        EmployeeResponseDto getEmployeeResponseDto = response.getBody();
+        EmployeeResponseDtoFromServer getEmployeeResponseDtoFromServer = response.getBody();
         log.info("Successfully fetched employee data with id : {}", id);
-        return getEmployeeResponseDto;
+        return getEmployeeResponseDtoFromServer;
 
       case NOT_FOUND:
         throw new NoDataFoundException("Employee with ID : " + id + " not found.");
@@ -122,16 +122,16 @@ public class RestUtil {
   }
 
   @SneakyThrows
-  public EmployeeResponseDto createEmployee(
+  public EmployeeResponseDtoFromServer createEmployee(
       CreateEmployeeRequestDtoApi createEmployeeRequestDtoApi) {
     String url = appConfig.getEmployeeServiceBaseUrl() + appConfig.getEmployeeServiceResourceUrl();
 
     log.info("Calling employee service at {} to create employee with name : {}", url,
         createEmployeeRequestDtoApi.getName());
 
-    ResponseEntity<EmployeeResponseDto> response = webClient.post().uri(url)
+    ResponseEntity<EmployeeResponseDtoFromServer> response = webClient.post().uri(url)
         .body(Mono.just(createEmployeeRequestDtoApi), CreateEmployeeRequestDtoApi.class)
-        .exchangeToMono(clientResponse -> clientResponse.toEntity(EmployeeResponseDto.class))
+        .exchangeToMono(clientResponse -> clientResponse.toEntity(EmployeeResponseDtoFromServer.class))
         .block();
 
     HttpStatus status = HttpStatus.valueOf(response.getStatusCode().value());

@@ -39,7 +39,6 @@ class EmployeeControllerTest {
         .build();
   }
 
-  // Test for getAllEmployees()
   @Test
   void testGetAllEmployees_Success() {
     List<EmployeeResponseDtoApi> employees = Collections.singletonList(employee);
@@ -53,7 +52,6 @@ class EmployeeControllerTest {
     assertEquals("Vinod", response.getBody().get(0).getName());
   }
 
-  // Test for getEmployeesByNameSearch()
   @Test
   void testGetEmployeesByNameSearch_Success() {
     List<EmployeeResponseDtoApi> employees = Collections.singletonList(employee);
@@ -68,7 +66,6 @@ class EmployeeControllerTest {
     assertEquals("Vinod", response.getBody().get(0).getName());
   }
 
-  // Test for getEmployeeById()
   @Test
   void testGetEmployeeById_Success() {
     String employeeId = employee.getId().toString();
@@ -81,7 +78,6 @@ class EmployeeControllerTest {
     assertEquals(employeeId, response.getBody().getId().toString());
   }
 
-  // Test for getHighestSalaryOfEmployees()
   @Test
   void testGetHighestSalaryOfEmployees_Success() {
     int highestSalary = 10000;
@@ -94,7 +90,6 @@ class EmployeeControllerTest {
     assertEquals(highestSalary, response.getBody());
   }
 
-  // Test for getTopTenHighestEarningEmployeeNames()
   @Test
   void testGetTopTenHighestEarningEmployeeNames_Success() {
     List<String> topEarners = Arrays.asList("Vinod", "Virat", "Rohit");
@@ -107,7 +102,6 @@ class EmployeeControllerTest {
     assertEquals(3, response.getBody().size());
   }
 
-  // Test for createEmployee()
   @Test
   void testCreateEmployee_Success() {
     CreateEmployeeRequestDtoApi newEmployee = CreateEmployeeRequestDtoApi.builder()
@@ -131,27 +125,15 @@ class EmployeeControllerTest {
     assertEquals(6000, response.getBody().getSalary());
   }
 
-  // Test for deleteEmployeeById()
   @Test
   void testDeleteEmployeeById_Success() {
     String employeeId = employee.getId().toString();
-    when(employeeService.deleteEmployeeById(employeeId)).thenReturn(true);
+    when(employeeService.deleteEmployeeById(employeeId)).thenReturn("Vinod");
 
     ResponseEntity<String> response = employeeController.deleteEmployeeById(employeeId);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals("Employee deleted successfully", response.getBody());
+    assertEquals("Vinod", response.getBody());
   }
 
-  // Test for deleteEmployeeById - Failure (service returns false)
-  @Test
-  void testDeleteEmployeeById_Failure() {
-    String employeeId = employee.getId().toString();
-    when(employeeService.deleteEmployeeById(employeeId)).thenReturn(false);
-
-    ResponseEntity<String> response = employeeController.deleteEmployeeById(employeeId);
-
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals("Employee deleted successfully", response.getBody());
-  }
 }

@@ -1,194 +1,202 @@
 package com.reliaquest.api.service;
 
-import com.reliaquest.api.dao.EmployeeDao;
+import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.reliaquest.api.constants.MockedObjectsForTesting;
+import com.reliaquest.api.dto.ClientDto.DeleteEmployeeResponseDto;
+import com.reliaquest.api.dto.ClientDto.EmployeeResponseDtoFromServer;
+import com.reliaquest.api.dto.ClientDto.GetAllEmployeeResponseDto;
 import com.reliaquest.api.dto.CreateEmployeeRequestDtoApi;
-import com.reliaquest.api.dto.EmployeeResponseDtoApi;
 import com.reliaquest.api.exception.NoDataFoundException;
 import com.reliaquest.api.exception.ServiceException;
 import com.reliaquest.api.service.serviceImpl.EmployeeServiceImpl;
+import com.reliaquest.api.util.RestUtil;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-
-import java.util.List;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @ExtendWith(MockitoExtension.class)
-class EmployeeServiceImplTest {
-
-  @Mock
-  private EmployeeDao employeeDao;
+public class EmployeeServiceImplTest {
 
   @InjectMocks
-  private EmployeeServiceImpl employeeService;
+  private EmployeeServiceImpl employeeServiceImpl;
 
-  private EmployeeResponseDtoApi employeeResponseDtoApi;
+  @Mock
+  private RestUtil restUtil;
 
-  @BeforeEach
-  void setUp() {
-    employeeResponseDtoApi = EmployeeResponseDtoApi.builder()
-        .id(UUID.randomUUID())
-        .name("abc")
-        .salary(50000)
-        .age(30)
-        .title("Developer")
-        .build();
+  @Test
+  void getAllEmployees_Success() {
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(MockedObjectsForTesting.getAllEmployeeResponseDto());
+
+    assertNotNull(this.employeeServiceImpl.getAllEmployees());
   }
 
   @Test
-  void testGetAllEmployees_Success() {
-    List<EmployeeResponseDtoApi> employees = List.of(employeeResponseDtoApi);
-    Mockito.when(employeeDao.getAllEmployees()).thenReturn(employees);
-
-    List<EmployeeResponseDtoApi> result = employeeService.getAllEmployees();
-
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertEquals("abc", result.get(0).getName());
-  }
-
-  @Test
-  void testGetAllEmployees_EmptyList() {
-    Mockito.when(employeeDao.getAllEmployees()).thenReturn(List.of());
+  void getAllEmployees_Failure() {
+    GetAllEmployeeResponseDto getAllEmployeeResponseDto =
+        MockedObjectsForTesting.getAllEmployeeResponseDto();
+    getAllEmployeeResponseDto.setData(List.of());
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(getAllEmployeeResponseDto);
 
     assertThrows(NoDataFoundException.class,
-        () -> employeeService.getAllEmployees());
+        () -> this.employeeServiceImpl.getAllEmployees());
   }
 
   @Test
-  void testGetEmployeesByName_Success() {
-    String name = "abc";
-    List<EmployeeResponseDtoApi> employees = List.of(employeeResponseDtoApi);
-    Mockito.when(employeeDao.getEmployeesByName(name)).thenReturn(employees);
+  void getEmployeesByName_Success() {
+    GetAllEmployeeResponseDto getAllEmployeeResponseDto =
+        MockedObjectsForTesting.getAllEmployeeResponseDto();
+    String name = "Vinod";
+    getAllEmployeeResponseDto.getData().get(0).setName(name);
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(getAllEmployeeResponseDto);
 
-    List<EmployeeResponseDtoApi> result = employeeService.getEmployeesByName(name);
-
-    assertNotNull(result);
-    assertEquals(1, result.size());
-    assertEquals("abc", result.get(0).getName());
+    assertNotNull(this.employeeServiceImpl
+        .getEmployeesByName(name));
   }
 
   @Test
-  void testGetEmployeesByName_NotFound() {
-    String name = "xyz";
-    Mockito.when(employeeDao.getEmployeesByName(name)).thenReturn(List.of());
+  void getEmployeesByName_Failure() {
+    GetAllEmployeeResponseDto getAllEmployeeResponseDto =
+        MockedObjectsForTesting.getAllEmployeeResponseDto();
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(getAllEmployeeResponseDto);
 
     assertThrows(NoDataFoundException.class,
-        () -> employeeService.getEmployeesByName(name));
+        () -> this.employeeServiceImpl.getEmployeesByName("Invalid Name"));
   }
 
   @Test
-  void testGetEmployeeById_Success() {
-    String id = "1";
-    Mockito.when(employeeDao.getEmployeeById(id)).thenReturn(employeeResponseDtoApi);
+  void getEmployeeById_Success() {
+    EmployeeResponseDtoFromServer employeeResponseDtoFromServer =
+        MockedObjectsForTesting.getEmployeeResDtoFromServer();
+    when(this.restUtil.getEmployeeById(Mockito.any()))
+        .thenReturn(employeeResponseDtoFromServer);
 
-    EmployeeResponseDtoApi result = employeeService.getEmployeeById(id);
-
-    assertNotNull(result);
-    assertEquals("abc", result.getName());
+    assertNotNull(this.employeeServiceImpl
+        .getEmployeeById(UUID.randomUUID().toString()));
   }
 
   @Test
-  void testGetEmployeeById_NotFound() {
-    String id = "1";
-    Mockito.when(employeeDao.getEmployeeById(id)).thenReturn(null);
+  void getEmployeeById_Failure() {
+    EmployeeResponseDtoFromServer employeeResponseDtoFromServer =
+        MockedObjectsForTesting.getEmployeeResDtoFromServer();
+    employeeResponseDtoFromServer.setData(null);
+    when(this.restUtil.getEmployeeById(Mockito.any()))
+        .thenReturn(employeeResponseDtoFromServer);
 
     assertThrows(NoDataFoundException.class,
-        () -> employeeService.getEmployeeById(id));
+        () -> this.employeeServiceImpl
+            .getEmployeeById(UUID.randomUUID().toString()));
   }
 
   @Test
-  void testGetHighestSalary_Success() {
-    Integer highestSalary = 100000;
-    Mockito.when(employeeDao.getHighestSalaryOfEmployees()).thenReturn(highestSalary);
+  void getHighestSalaryOfEmployees_Success() {
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(MockedObjectsForTesting.getAllEmployeeResponseDto());
 
-    Integer result = employeeService.getHighestSalaryOfEmployees();
-
-    assertNotNull(result);
-    assertEquals(100000, result);
+    assertNotNull(this.employeeServiceImpl.getHighestSalaryOfEmployees());
   }
 
   @Test
-  void testGetHighestSalary_NoData() {
-    Mockito.when(employeeDao.getHighestSalaryOfEmployees()).thenReturn(0);
+  void getHighestSalaryOfEmployees_Failure() {
+    GetAllEmployeeResponseDto employeeResponseDto =
+        MockedObjectsForTesting.getAllEmployeeResponseDto();
+    employeeResponseDto.setData(new ArrayList<>());
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(employeeResponseDto);
 
     assertThrows(NoDataFoundException.class,
-        () -> employeeService.getHighestSalaryOfEmployees());
+        () -> this.employeeServiceImpl.getHighestSalaryOfEmployees());
   }
 
   @Test
-  void testGetTopTenHighestEarningEmployeeNames_Success() {
-    List<String> topEarningNames = List.of("abc", "xyz");
-    Mockito.when(employeeDao.getTopTenHighestEarningEmployeeNames()).thenReturn(topEarningNames);
+  void getTopTenHighestEarningEmployeeNames_Success() {
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(MockedObjectsForTesting.getAllEmployeeResponseDto());
 
-    List<String> result = employeeService.getTopTenHighestEarningEmployeeNames();
-
-    assertNotNull(result);
-    assertEquals(2, result.size());
-    assertTrue(result.contains("abc"));
+    assertNotNull(this.employeeServiceImpl.getTopTenHighestEarningEmployeeNames());
   }
 
   @Test
-  void testGetTopTenHighestEarningEmployeeNames_NoData() {
-    Mockito.when(employeeDao.getTopTenHighestEarningEmployeeNames()).thenReturn(List.of());
+  void getTopTenHighestEarningEmployeeNames_Failure() {
+    GetAllEmployeeResponseDto employeeResponseDto =
+        MockedObjectsForTesting.getAllEmployeeResponseDto();
+    employeeResponseDto.setData(new ArrayList<>());
+    when(this.restUtil.getAllEmployees())
+        .thenReturn(employeeResponseDto);
 
     assertThrows(NoDataFoundException.class,
-        () -> employeeService.getTopTenHighestEarningEmployeeNames());
+        () -> this.employeeServiceImpl.getTopTenHighestEarningEmployeeNames());
   }
 
   @Test
-  void testCreateEmployee_Success() {
-    CreateEmployeeRequestDtoApi createEmployeeRequestDtoApi = CreateEmployeeRequestDtoApi.builder()
-        .name("abc")
-        .salary(50000)
-        .age(30)
-        .title("Developer")
-        .build();
-    Mockito.when(employeeDao.createEmployee(createEmployeeRequestDtoApi)).thenReturn(
-        employeeResponseDtoApi);
+  void createEmployee_Success() {
+    CreateEmployeeRequestDtoApi createEmployeeRequestDtoApi =
+        MockedObjectsForTesting.getCreateEmployeeRequestDto();
+    when(this.restUtil.createEmployee(createEmployeeRequestDtoApi))
+        .thenReturn(MockedObjectsForTesting.getEmployeeResDtoFromServer());
 
-    EmployeeResponseDtoApi result = employeeService.createEmployee(createEmployeeRequestDtoApi);
-
-    assertNotNull(result);
-    assertEquals("abc", result.getName());
+    assertNotNull(this.employeeServiceImpl.createEmployee(createEmployeeRequestDtoApi));
   }
 
   @Test
-  void testCreateEmployee_Failure() {
-    CreateEmployeeRequestDtoApi createEmployeeRequestDtoApi = CreateEmployeeRequestDtoApi.builder()
-        .name("abc")
-        .salary(50000)
-        .age(30)
-        .title("Developer")
-        .build();
-    Mockito.when(employeeDao.createEmployee(createEmployeeRequestDtoApi)).thenReturn(null);
+  void createEmployee_Failure() {
+    CreateEmployeeRequestDtoApi createEmployeeRequestDtoApi =
+        MockedObjectsForTesting.getCreateEmployeeRequestDto();
+
+    EmployeeResponseDtoFromServer employeeResponseDtoFromServer =
+        MockedObjectsForTesting.getEmployeeResDtoFromServer();
+    employeeResponseDtoFromServer.setData(null);
+    when(this.restUtil.createEmployee(createEmployeeRequestDtoApi))
+        .thenReturn(employeeResponseDtoFromServer);
 
     assertThrows(ServiceException.class,
-        () -> employeeService.createEmployee(createEmployeeRequestDtoApi));
+        () -> this.employeeServiceImpl.createEmployee(createEmployeeRequestDtoApi));
   }
 
   @Test
-  void testDeleteEmployee_Success() {
-    String id = "1";
-    Mockito.when(employeeDao.deleteEmployeeById(id)).thenReturn(true);
+  void deleteEmployeeById_Success() {
+    when(this.restUtil.getEmployeeById(Mockito.any()))
+        .thenReturn(MockedObjectsForTesting.getEmployeeResDtoFromServer());
 
-    boolean result = employeeService.deleteEmployeeById(id);
+    when(this.restUtil.deleteEmployeeByName(Mockito.any()))
+        .thenReturn(DeleteEmployeeResponseDto.builder()
+            .data(true).build());
 
-    assertTrue(result);
+    assertNotNull(this.employeeServiceImpl.deleteEmployeeById(UUID.randomUUID().toString()));
   }
 
   @Test
-  void testDeleteEmployee_Failure() {
-    String id = "1";
-    Mockito.when(employeeDao.deleteEmployeeById(id)).thenReturn(false);
+  void deleteEmployeeById_Failure() {
+    EmployeeResponseDtoFromServer employeeResponseDtoFromServer = MockedObjectsForTesting.getEmployeeResDtoFromServer();
+    employeeResponseDtoFromServer.setData(null);
+    when(this.restUtil.getEmployeeById(Mockito.any()))
+        .thenReturn(employeeResponseDtoFromServer);
+
+    assertThrows(NoDataFoundException.class,
+        () -> this.employeeServiceImpl.deleteEmployeeById(UUID.randomUUID().toString()));
+  }
+
+  @Test
+  void deleteEmployeeById_Failure2() {
+    when(this.restUtil.getEmployeeById(Mockito.any()))
+        .thenReturn(MockedObjectsForTesting.getEmployeeResDtoFromServer());
+
+    when(this.restUtil.deleteEmployeeByName(Mockito.any()))
+        .thenReturn(DeleteEmployeeResponseDto.builder()
+            .data(false).build());
 
     assertThrows(ServiceException.class,
-        () -> employeeService.deleteEmployeeById(id));
+        () -> this.employeeServiceImpl.deleteEmployeeById(UUID.randomUUID().toString()));
   }
 }

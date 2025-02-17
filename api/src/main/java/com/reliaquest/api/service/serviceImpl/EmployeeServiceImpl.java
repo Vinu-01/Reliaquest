@@ -120,18 +120,22 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   @SneakyThrows
-  public boolean deleteEmployeeById(String id) {
+  public String deleteEmployeeById(String id) {
     log.info("Attempting to delete employee with id: {}", id);
     EmployeeResponseDtoApi employeeResponseDtoApi = getEmployeeById(id);
-    boolean isDeleted = this.restUtil.deleteEmployeeByName(employeeResponseDtoApi.getName()).getData();
 
+    if (Objects.isNull(employeeResponseDtoApi)) {
+      log.error("No such employee exists with id {}", id);
+      throw new NoDataFoundException("No employee exists to delete with id " + id);
+    }
+
+    boolean isDeleted = this.restUtil.deleteEmployeeByName(employeeResponseDtoApi.getName()).getData();
     if (isDeleted) {
       log.info("Successfully deleted employee with id: {}", id);
+      return employeeResponseDtoApi.getName();
     } else {
       log.error("Failed to delete employee with id: {}", id);
       throw new ServiceException("Internal error occurred. Failed to delete employee");
     }
-
-    return isDeleted;
   }
 }
