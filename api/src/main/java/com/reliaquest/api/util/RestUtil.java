@@ -1,10 +1,10 @@
 package com.reliaquest.api.util;
 
 import com.reliaquest.api.config.AppConfig;
-import com.reliaquest.api.dto.ClientResponseDto.DeleteEmployeeRequestDto;
-import com.reliaquest.api.dto.ClientResponseDto.DeleteEmployeeResponseDto;
-import com.reliaquest.api.dto.ClientResponseDto.EmployeeResponseDto;
-import com.reliaquest.api.dto.ClientResponseDto.GetAllEmployeeResponseDto;
+import com.reliaquest.api.dto.ClientDto.DeleteEmployeeRequestDto;
+import com.reliaquest.api.dto.ClientDto.DeleteEmployeeResponseDto;
+import com.reliaquest.api.dto.ClientDto.EmployeeResponseDto;
+import com.reliaquest.api.dto.ClientDto.GetAllEmployeeResponseDto;
 import com.reliaquest.api.dto.CreateEmployeeRequestDtoApi;
 import com.reliaquest.api.exception.NoDataFoundException;
 import com.reliaquest.api.exception.ServiceException;

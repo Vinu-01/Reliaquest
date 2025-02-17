@@ -1,12 +1,9 @@
 package com.reliaquest.api.service.serviceImpl;
 
-import com.reliaquest.api.dao.EmployeeDao;
-import com.reliaquest.api.dto.ClientResponseDto.EmployeeResponseDto;
 import com.reliaquest.api.dto.CreateEmployeeRequestDtoApi;
 import com.reliaquest.api.dto.EmployeeResponseDtoApi;
 import com.reliaquest.api.exception.NoDataFoundException;
 import com.reliaquest.api.exception.ServiceException;
-import com.reliaquest.api.model.Employee;
 import com.reliaquest.api.service.EmployeeService;
 import com.reliaquest.api.util.RestUtil;
 import java.util.Comparator;
@@ -31,11 +28,11 @@ public class EmployeeServiceImpl implements EmployeeService {
   @Override
   @SneakyThrows
   public List<EmployeeResponseDtoApi> getAllEmployees() {
-    log.info("Fetching all employees from DB");
+    log.info("Fetching all employees");
     List<EmployeeResponseDtoApi> employees = this.restUtil.getAllEmployees().getData();
 
     if (CollectionUtils.isEmpty(employees)) {
-      log.error("No employees found in the database");
+      log.error("No employees found");
       throw new NoDataFoundException("No employee found");
     }
 

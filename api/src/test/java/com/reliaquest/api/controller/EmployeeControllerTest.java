@@ -1,22 +1,22 @@
 package com.reliaquest.api.controller;
 
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.reliaquest.api.controller.EmployeeControllerImpl.EmployeeController;
 import com.reliaquest.api.dto.CreateEmployeeRequestDtoApi;
 import com.reliaquest.api.dto.EmployeeResponseDtoApi;
 import com.reliaquest.api.service.EmployeeService;
-import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import java.util.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeControllerTest {
@@ -27,109 +27,129 @@ class EmployeeControllerTest {
   @InjectMocks
   private EmployeeController employeeController;
 
+  private EmployeeResponseDtoApi employee;
+
+  @BeforeEach
+  void setUp() {
+    // Setup a sample EmployeeResponseDtoApi object for tests
+    employee = EmployeeResponseDtoApi.builder()
+        .id(UUID.randomUUID())
+        .name("Vinod")
+        .salary(5000)
+        .build();
+  }
+
+  // Test for getAllEmployees()
   @Test
   void testGetAllEmployees_Success() {
-    List<EmployeeResponseDtoApi> employees = List.of(
-        EmployeeResponseDtoApi.builder().id(UUID.randomUUID()).name("abc").salary(50000).age(30).title("Developer").build()
-    );
-    Mockito.when(employeeService.getAllEmployees()).thenReturn(employees);
+    List<EmployeeResponseDtoApi> employees = Collections.singletonList(employee);
+    when(employeeService.getAllEmployees()).thenReturn(employees);
 
     ResponseEntity<List<EmployeeResponseDtoApi>> response = employeeController.getAllEmployees();
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
     assertEquals(1, response.getBody().size());
+    assertEquals("Vinod", response.getBody().get(0).getName());
   }
 
+  // Test for getEmployeesByNameSearch()
   @Test
   void testGetEmployeesByNameSearch_Success() {
-    String name = "abc";
-    List<EmployeeResponseDtoApi> employees = List.of(
-        EmployeeResponseDtoApi.builder().id(UUID.randomUUID()).name(name).salary(50000).age(30).title("Developer").build()
-    );
-    Mockito.when(employeeService.getEmployeesByName(name)).thenReturn(employees);
+    List<EmployeeResponseDtoApi> employees = Collections.singletonList(employee);
+    String searchString = "Vinod";
+    when(employeeService.getEmployeesByName(searchString)).thenReturn(employees);
 
-    ResponseEntity<List<EmployeeResponseDtoApi>> response = employeeController.getEmployeesByNameSearch(name);
+    ResponseEntity<List<EmployeeResponseDtoApi>> response = employeeController.getEmployeesByNameSearch(searchString);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
     assertEquals(1, response.getBody().size());
+    assertEquals("Vinod", response.getBody().get(0).getName());
   }
 
+  // Test for getEmployeeById()
   @Test
   void testGetEmployeeById_Success() {
-    UUID id = UUID.randomUUID();
-    EmployeeResponseDtoApi employee = EmployeeResponseDtoApi.builder()
-        .id(id)
-        .name("abc")
-        .salary(50000)
-        .age(30)
-        .title("Developer")
-        .build();
-    Mockito.when(employeeService.getEmployeeById(id.toString())).thenReturn(employee);
+    String employeeId = employee.getId().toString();
+    when(employeeService.getEmployeeById(employeeId)).thenReturn(employee);
 
-    ResponseEntity<EmployeeResponseDtoApi> response = employeeController.getEmployeeById(id.toString());
+    ResponseEntity<EmployeeResponseDtoApi> response = employeeController.getEmployeeById(employeeId);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals("abc", response.getBody().getName());
+    assertEquals(employeeId, response.getBody().getId().toString());
   }
 
+  // Test for getHighestSalaryOfEmployees()
   @Test
-  void testGetHighestSalary_Success() {
-    int highestSalary = 100000;
-    Mockito.when(employeeService.getHighestSalaryOfEmployees()).thenReturn(highestSalary);
+  void testGetHighestSalaryOfEmployees_Success() {
+    int highestSalary = 10000;
+    when(employeeService.getHighestSalaryOfEmployees()).thenReturn(highestSalary);
 
     ResponseEntity<Integer> response = employeeController.getHighestSalaryOfEmployees();
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
     assertEquals(highestSalary, response.getBody());
   }
 
+  // Test for getTopTenHighestEarningEmployeeNames()
   @Test
   void testGetTopTenHighestEarningEmployeeNames_Success() {
-    List<String> topEarners = List.of("abc", "xyz");
-    Mockito.when(employeeService.getTopTenHighestEarningEmployeeNames()).thenReturn(topEarners);
+    List<String> topEarners = Arrays.asList("Vinod", "Virat", "Rohit");
+    when(employeeService.getTopTenHighestEarningEmployeeNames()).thenReturn(topEarners);
 
     ResponseEntity<List<String>> response = employeeController.getTopTenHighestEarningEmployeeNames();
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals(2, response.getBody().size());
+    assertEquals(3, response.getBody().size());
   }
 
+  // Test for createEmployee()
   @Test
   void testCreateEmployee_Success() {
-    CreateEmployeeRequestDtoApi createEmployeeRequestDtoApi = CreateEmployeeRequestDtoApi.builder()
-        .name("abc")
-        .salary(50000)
-        .age(30)
-        .title("Developer")
+    CreateEmployeeRequestDtoApi newEmployee = CreateEmployeeRequestDtoApi.builder()
+        .name("Virat")
+        .salary(6000)
         .build();
+
     EmployeeResponseDtoApi createdEmployee = EmployeeResponseDtoApi.builder()
         .id(UUID.randomUUID())
-        .name("abc")
-        .salary(50000)
-        .age(30)
-        .title("Developer")
+        .name("Virat")
+        .salary(6000)
         .build();
 
-    Mockito.when(employeeService.createEmployee(createEmployeeRequestDtoApi)).thenReturn(createdEmployee);
+    when(employeeService.createEmployee(newEmployee)).thenReturn(createdEmployee);
 
-    ResponseEntity<EmployeeResponseDtoApi> response = employeeController.createEmployee(
-        createEmployeeRequestDtoApi);
+    ResponseEntity<EmployeeResponseDtoApi> response = employeeController.createEmployee(newEmployee);
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals("abc", response.getBody().getName());
+    assertEquals("Virat", response.getBody().getName());
+    assertEquals(6000, response.getBody().getSalary());
   }
 
+  // Test for deleteEmployeeById()
   @Test
-  void testDeleteEmployee_Success() {
-    String id = "1";
-    Mockito.when(employeeService.deleteEmployeeById(id)).thenReturn(true);
+  void testDeleteEmployeeById_Success() {
+    String employeeId = employee.getId().toString();
+    when(employeeService.deleteEmployeeById(employeeId)).thenReturn(true);
 
-    ResponseEntity<String> response = employeeController.deleteEmployeeById(id);
+    ResponseEntity<String> response = employeeController.deleteEmployeeById(employeeId);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals("Employee deleted successfully", response.getBody());
+  }
+
+  // Test for deleteEmployeeById - Failure (service returns false)
+  @Test
+  void testDeleteEmployeeById_Failure() {
+    String employeeId = employee.getId().toString();
+    when(employeeService.deleteEmployeeById(employeeId)).thenReturn(false);
+
+    ResponseEntity<String> response = employeeController.deleteEmployeeById(employeeId);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals("Employee deleted successfully", response.getBody());

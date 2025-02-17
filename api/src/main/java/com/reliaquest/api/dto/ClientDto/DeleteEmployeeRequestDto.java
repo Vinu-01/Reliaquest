@@ -1,4 +1,4 @@
-package com.reliaquest.api.dto.ClientResponseDto;
+package com.reliaquest.api.dto.ClientDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
