@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+# Reliaquest
+Reliaquest
+=======
 # ReliaQuest Coding Challenge
 
 #### In this assessment you will be tasked with filling out the functionality of different methods that will be listed further down.
@@ -146,3 +150,4 @@ and style guidelines with every build.
 To resolve any errors, you must run **spotlessApply** task.
 `./gradlew spotlessApply`
 
+>>>>>>> 9c21e07c64d62b839747883585a2e401b825ae59
